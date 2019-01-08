@@ -1,0 +1,69 @@
+####################################################################
+# >>>>  Env. Params. for installer <<<<
+#
+# EXT_IP: External IP
+#   default: acquire from default route interface's IP
+#
+# K8S_VERSION: Kubernetes Version. version string only.
+#   example: '1.13.1'
+#   default: 'default'
+#   special value:
+#    - default: installed kubeadm's version
+#    - latest: use latest released version (need internet connection)
+#
+# KUBEADM_ADVERTISE_IP: Advertise/Exposed IP for kubernetes
+#
+# KUBEADM_OPTIONS: Additional kubeadm parameters
+#
+# K8S_POD_CIDR: Pod CIDR.
+#   default: '100.64.0.0/16'
+#
+# FLAG_SET_SINGLE_NODE: Single machine provisioning.
+#
+# CNI_PLUGIN_TYPE: CNI plugins
+#   example: calico, flannel, weave....
+#   default: 'calico'
+#
+# PV_STORAGE_TYPE: Persistance Volume Backend Storage types
+#   default: 'local'
+#   special value:
+#    - local: use local storage for PV
+#
+####################################################################
+
+EXT_IP=${EXT_IP:-"$(ip route get 8.8.8.8 | awk '/8.8.8.8/ {print $7}')"}
+K8S_VERSION=${K8S_VERSION:-"default"}
+
+#- Kubeadm
+KUBEADM_ADVERTISE_IP=${KUBEADM_ADVERTISE_IP:-"${EXT_IP}"}
+KUBEADM_OPTIONS=${KUBEADM_OPTIONS:-""}
+K8S_POD_CIDR=${K8S_POD_CIDR:-"100.64.0.0/16"}
+
+#- Provisioning
+FLAG_SET_SINGLE_NODE=${FLAG_SET_SINGLE_NODE:-"no"}
+
+#- CNI network
+CNI_PLUGIN_TYPE=${CNI_PLUGIN_TYPE:-"calico"}
+
+#- Persistance Volumes
+PV_STORAGE_TYPE=${PV_STORAGE_TYPE:-"local"}
+PV_STORAGE_LOCAL_PATH=${PV_STORAGE_LOCAL_PATH:-"/NAS/k8s-storages"}
+PV_STORAGE_NAME=${PV_STORAGE_NAME:-"sc-lfs"}
+PV_STORAGE_MAX_SIZE=${PV_STORAGE_MAX_SIZE:-"100Gi"}
+
+#- Upgrades
+# FLAG_UPGRADE_MASTER: set if host is master node
+FLAG_UPGRADE_MASTER=${FLAG_UPGRADE_MASTER:-"no"}
+
+#- Helm
+HELM_VER=${HELM_VER:-"latest"}
+HELM_ARCH=${HELM_ARCH:-"linux-amd64"}
+FLAG_ADD_HELM_REPO=${FLAG_ADD_HELM_REPO:-"no"}
+
+#- Haproxy
+HAPROXY_CONFIG_PATH=${HAPROXY_CONFIG_PATH:-"/NAS/k8s-data/haproxy"}
+
+#- Cert
+CERT_DOMAINS=${CERT_DOMAINS:-"servers"}
+CERT_RSA_KEY_SIZE=${RSA_KEY_SIZE:-"4096"}
+CERT_MAX_DAYS=${CERT_MAX_DAYS:-"7300"}

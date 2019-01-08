@@ -1,0 +1,65 @@
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#  name: kube-elk
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: elk-kibana
+  namespace: kube-elk
+spec:
+  replicas: 1
+  selector:
+    name: elasticsearch-client
+  template:
+    metadata:
+      labels:
+        name: elasticsearch-client
+    spec:
+      containers:
+      - name: elasticsearch
+        env:
+        - name: discovery.type
+          value: single-node
+        - name: SERVER_NAME
+          value: kibana.test.hcdd.kr
+        - name: ELASTICSEARCH_URL
+          value: "http://${ELASTIC_SEARCH_DOMAIN}:9200"
+        #- "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+        #
+        image: docker.elastic.co/kibana/kibana:${ELASTIC_VERSION}
+        # Image Tag Version => https://www.docker.elastic.co/
+        imagePullPolicy: Always
+        #volumeMounts:
+        #- name: vl-kibana-config
+        #  mountPath: "/usr/share/kibana/config"
+        ports:
+        - containerPort: 5601
+      #volumes:
+      #- name: vl-kibana-config
+      #  hostPath:
+      #    path: "${ELASTIC_KIBANA_PATH}"
+      #    type: Directory
+
+# Health Chcek -> http://127.0.0.1:9200/_cat/health
+# Config: custom_elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elk-kibana
+  namespace: kube-elk
+  labels:
+    name: elk-kibana
+spec:
+  type: LoadBalancer
+  selector:
+    name: elk-kibana
+  #externalIPs:
+  #- ${EXT_IP}
+  ports:
+  - protocol: TCP
+    port: 5601
+    targetPort: 5601
+    name: kibana-port

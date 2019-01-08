@@ -1,0 +1,133 @@
+#!/bin/bash
+####################################################################
+# Kubernetes Installer for Master
+# - Code by Jioh L. Jung
+####################################################################
+
+
+
+####################################################################
+# Functions
+#- check command exist
+function command_exists() {
+  command -v "$@" > /dev/null 2>&1
+}
+
+#- Wait until Pods up
+function wait_pod_up () {
+  POD_NAME=${1:-"none"}
+  NS=${2:-"default"}
+  POD_COUNT=${3:-1}
+  while true; do
+    RES=`kubectl get pod -o wide -n ${NS} | grep ${POD_NAME} | grep -i running | wc -l`
+    echo "> Running Pod Detected (${POD_NAME}/${NS}): ${RES}/${POD_COUNT}"
+    if [ "${RES}" -eq "${POD_COUNT}" ] || [ "${RES}" -gt "${POD_COUNT}" ]; then
+      return 0
+    else
+      kubectl get pod -o wide -n ${NS} | grep ${POD_NAME} || true
+    fi
+    sleep 3
+  done
+}
+
+#- OS Version Detect
+function get_distribution() {
+  lsb_dist=""
+  if [ -r /etc/os-release ]; then
+    lsb_dist="$(. /etc/os-release && echo "$ID")"
+  fi
+
+  echo "$lsb_dist"
+}
+
+lsb_dist=$( get_distribution )
+lsb_dist="$(echo "$lsb_dist" | tr '[:upper:]' '[:lower:]')"
+
+case "$lsb_dist" in
+  ubuntu)
+    if [ -x "$(command -v lsb_release)" ]; then
+      dist_version="$(lsb_release --codename | cut -f2)"
+    fi
+    if [ -z "$dist_version" ] && [ -r /etc/lsb-release ]; then
+      dist_version="$(. /etc/lsb-release && echo "$DISTRIB_CODENAME")"
+    fi
+    ;;
+  debian)
+    dist_version="$(sed 's/\/.*//' /etc/debian_version | sed 's/\..*//')"
+    case "$dist_version" in
+      9)
+        dist_version="stretch"
+        ;;
+      8)
+        dist_version="jessie"
+        ;;
+    esac
+    ;;
+  centos|rhel|ol|sles)
+    if [ -z "$dist_version" ] && [ -r /etc/os-release ]; then
+      dist_version="$(. /etc/os-release && echo "$VERSION_ID")"
+    fi
+    ;;
+  *)
+    if [ -x "$(command -v lsb_release)" ]; then
+      dist_version="$(lsb_release --release | cut -f2)"
+    fi
+    if [ -z "$dist_version" ] && [ -r /etc/os-release ]; then
+      dist_version="$(. /etc/os-release && echo "$VERSION_ID")"
+    fi
+    ;;
+esac
+
+echo ">> OS Detected... <<"
+echo ">> OS: Linux / Dist: ${lsb_dist} / Version: ${dist_version} <<"
+
+
+function dpkg_install() {
+  PKGS="$1"
+  #>> Just wait for unlock apt update
+  RES="1"
+  while [ "${RES}" -ne "0" ]; do
+    dpkg -i "${PKGS}"
+    RES="$?"
+    if [ "${RES}" -ne "0" ]; then
+      echo ">> ...Wait unlock... <<"
+      lsof /var/lib/dpkg/lock
+      #lsof /var/lib/dpkg/lock | awk '{print $2}' | xargs kill -9 {}
+      sleep 5
+    fi
+  done
+}
+
+get_latest_release() {
+  curl --silent "https://api.github.com/repos/$1/releases/latest" | # Get latest release from GitHub api
+    grep '"tag_name":' |                                            # Get tag line
+    sed -E 's/.*"([^"]+)".*/\1/'                                    # Pluck JSON value
+}
+
+####################################################################
+#- Purge Interfaces
+purge_iface () {
+  IFACE=${1:-""}
+  if [ -x "$(command -v ifconfig)" ]; then
+    ifconfig ${IFACE} down || true
+  fi
+  if [ -x "$(command -v ip)" ]; then
+    ip link del ${IFACE} || true
+  fi
+}
+
+####################################################################
+#- Version String Build
+if [ "${K8S_VERSION}" == "default" ]; then
+  if [ -x "$(command -v kubeadm)" ]; then
+    K8S_VERSION_TMP=`kubeadm version -o short | tr -dc '\.0-9'`
+  else
+    K8S_VERSION_TMP="$(curl -sSL https://dl.k8s.io/release/stable.txt | tr -dc '\.0-9')"
+  fi
+elif [ "${K8S_VERSION}" == "latest" ]; then
+  K8S_VERSION_TMP="$(curl -sSL https://dl.k8s.io/release/stable.txt | tr -dc '\.0-9')"
+else
+  K8S_VERSION_TMP=`echo "${K8S_VERSION}" | tr -dc '\.0-9'`
+fi
+
+
