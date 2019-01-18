@@ -6,8 +6,6 @@
 
 ####################################################################
 # Setup values
-#- Log files
-TMP_LOG_FILE=$(mktemp /tmp/output.XXXXXXXXXX)
 
 #- Root Check
 if (( EUID != 0 )); then
@@ -28,24 +26,9 @@ fi
 . libs/functions
 
 
-if [ -x "$(command -v docker)" ]; then
-  echo ">> docker found..."
-else
-  echo ">> need docker install <<"
-  exit 1
-fi
-if [ -x "$(command -v kubeadm)" ]; then
-  echo ">> kubeadm found..."
-else
-  echo ">> need kubeadm install <<"
-  exit 1
-fi
-if [ -x "$(command -v kubectl)" ]; then
-  echo ">> kubectl found..."
-else
-  echo ">> need kubectl install <<"
-  exit 1
-fi
+if [ ! -x "$(command -v docker)" ]; then echo ">> need docker install <<" ; exit 1; fi
+if [ ! -x "$(command -v kubeadm)" ]; then echo ">> need kubeadm install <<" ; exit 1 ; fi
+if [ ! -x "$(command -v kubectl)" ]; then echo ">> need kubectl install <<" ; exit 1; fi
 
 #- Print Env. Params for debugging
 echo ">>ENV>>================================================================"
@@ -66,12 +49,16 @@ if ! [ "${K8S_VERSION}" == "latest" ]; then
 fi
 ${BASE_DIR}/load-images.sh ./images/shared/
 
+
+systemctl restart docker
+sleep 3
+
 kubeadm init \
-  ${KUBEADM_OPTIONS} | tee ${LOG_FILE}
+  ${KUBEADM_OPTIONS}
 
 
 #-  Setup kubecfg's configurations
-./set-permission.sh
+${BASE_DIR}/set-permission.sh
 
 #- Copy Required files
 if [ "${CNI_PLUGIN_TYPE}" == "weave" ]; then
@@ -129,15 +116,8 @@ if [ "${FLAG_SET_SINGLE_NODE}" == "yes" ]; then
   # Set Single Node Taints
   kubectl taint nodes --all node-role.kubernetes.io/master-
 else
-
   #- Generate Join Command
-  JOIN_SHELL_FILE_NAME="${BASE_DIR}/install-slave-node.${EXT_IP}.sh"
-  cd ${BASE_DIR}
-  echo "${BASE_DIR}/install-common.sh" > "${JOIN_SHELL_FILE_NAME}"
-  echo "${BASE_DIR}/load-images.sh ./cni/${CNI_TYPE}" >> "${JOIN_SHELL_FILE_NAME}"
-  echo "${BASE_DIR}/load-images.sh ./images/shared/"  >> "${JOIN_SHELL_FILE_NAME}"
-  grep "kubeadm join" ${LOG_FILE} >> "${JOIN_SHELL_FILE_NAME}"
-  chmod +x "${JOIN_SHELL_FILE_NAME}"
+  ./get-slave-join.sh
 fi
 
 wait_pod_up kube-apiserver kube-system 1

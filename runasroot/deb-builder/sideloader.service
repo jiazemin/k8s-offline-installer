@@ -1,0 +1,9 @@
+[Unit]
+Description=System Sideloader
+
+[Service]
+#Type=oneshot #or simple
+ExecStart=/usr/local/hcdd/sideloader
+
+[Install]
+WantedBy=multi-user.target

@@ -9,8 +9,8 @@ BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd "${BASE_DIR}"
 
 #- Imports configure & functions
-if [ -f "config" ]; then
-  chmod +x config
+if [ -f "../config" ]; then
+  chmod +x ../config
   . ../config
 fi
 . ../default

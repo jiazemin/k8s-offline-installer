@@ -55,7 +55,7 @@ case "$lsb_dist" in
     ;;
   centos|rhel|ol|sles)
     echo ">> Centos/RHEL/OL/SLES...."
-    if [ "${K8S_VERSION}" == "latest" ] || [ "${K8S_VERSION}" == "default"]; then
+    if [ "${K8S_VERSION}" == "latest" ] || [ "${K8S_VERSION}" == "default" ]; then
       K8S_PACKAGES=`find bases/rpm-packages/kubehosts-* | sort | tail -n 1`
     else
       echo ">> Specific Version: ${K8S_VERSION}"
@@ -78,3 +78,4 @@ case "$lsb_dist" in
 esac
 
 ${BASE_DIR}/load-images.sh ./images/${K8S_VERSION_TMP}
+systemctl restart docker

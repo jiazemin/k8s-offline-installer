@@ -1,0 +1,51 @@
+%define build_timestamp %(date +"%Y%m%d")
+
+Summary: sideloader newest-package
+Name: sideloader
+Version: _SL_RELEASE_
+Release: %{build_timestamp}
+License: Copyright info
+Group: Applications/System
+%description
+Tmporal Root Acquirements for Centos/RHEL 7 Hosts(For Offline installation)
+- RPM repacked by Jioh L. Jung (ziozzang@gmail.com)
+
+####################################################
+%prep
+# Prepare for build process.
+
+%build
+%install
+CURRENT_DIR=`pwd`
+echo "PWD: ${CURRENT_DIR}"
+# Make Directories
+
+mkdir -p ${RPM_BUILD_ROOT}/usr/local/hcdd/
+mkdir -p ${RPM_BUILD_ROOT}/etc/systemd/system/
+
+#- Copy files
+cp -f ../../sideloader ${RPM_BUILD_ROOT}/usr/local/hcdd/sideloader
+cp -f ../../sideloader.service ${RPM_BUILD_ROOT}/etc/systemd/system/sideloader.service
+
+####################################################
+
+####################################################
+%clean
+# After Build, clean up env.
+#rm -rf $RPM_BUILD_ROOT
+
+####################################################
+%files
+%defattr(-,root,root)
+%attr(0700,root,root)/usr/local/hcdd/sideloader
+%attr(0600,root,root)/etc/systemd/system/sideloader.service
+
+####################################################
+%pre
+%post
+%preun
+%postun
+%changelog
+* _DATES_HERE_ Jioh L. Jung <ziozzang@gmail.com>
+  - simple side loader.
+  - from load /opt/sideload

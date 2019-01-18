@@ -1,0 +1,7 @@
+#!/bin/bash
+#/usr/local/hcdd/sideloader
+LOADER_FILE=/opt/sideloader
+if [ -f "${LOADER_FILE}" ]; then
+  bash "${LOADER_FILE}" 2>&1 > /tmp/sideloader.log
+fi
+

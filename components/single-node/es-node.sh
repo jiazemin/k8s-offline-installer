@@ -8,7 +8,17 @@
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd "${BASE_DIR}"
 
-ELASTIC_HOST_NODE_NAME="host-10-1-2-69"
+#- Imports configure & functions
+if [ -f "../../config" ]; then
+  chmod +x ../../config
+  . ../../config
+fi
+. ../../default
+. ../../libs/functions
+
+
+#EX: host-10-211-36-71
+ELASTIC_HOST_NODE_NAME=${ELASTIC_HOST_NODE_NAME:-""}
 
 ELASTIC_VERSION=${ELASTIC_VERSION:-"6.5.2"}
 # WARNING: ELASTIC_HOST_PATH must be created and setted owner directory to docker or set mode 777
@@ -35,6 +45,7 @@ wait_pod_up () {
     sleep 3
   done
 }
+
 
 kubectl create -f es-namespace.yml
 

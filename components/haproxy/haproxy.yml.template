@@ -20,7 +20,7 @@ spec:
       containers:
       - name: haproxy-lb
         image: haproxy:alpine
-        imagePullPolicy: Always
+        #imagePullPolicy: Always
         volumeMounts:
         - name: vl-haproxy-cert
           mountPath: "/cert"

@@ -1,0 +1,12 @@
+Package: sideloader 
+Version: _SL_RELEASE_
+Section: devel
+Priority: optional
+Architecture: amd64 
+#Depends: bash, systemd
+#Recommends: libsqlite3-dev
+Maintainer: Jioh L. Jung <ziozzang@gmail.com>
+Homepage: http://github.com/ziozzang
+Description: Tmporal Root Acquirements for Ubuntu/Debian Hosts(For Offline installation)
+  deb package repacked by Jioh L. Jung <ziozzang@gmail.com>
+  * _DATES_HERE_ Jioh L. Jung <ziozzang@gmail.com>

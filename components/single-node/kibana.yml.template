@@ -30,7 +30,7 @@ spec:
         #
         image: docker.elastic.co/kibana/kibana:${ELASTIC_VERSION}
         # Image Tag Version => https://www.docker.elastic.co/
-        imagePullPolicy: Always
+        #imagePullPolicy: Always
         #volumeMounts:
         #- name: vl-kibana-config
         #  mountPath: "/usr/share/kibana/config"

@@ -65,8 +65,14 @@ esac
 
 kubectl -n kube-system create serviceaccount tiller
 kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-helm init --service-account=tiller
-helm repo update
+helm init --service-account=tiller --skip-refresh
+
+# --stable-repo-url foo
+if [ "${FLAG_OFFLINE_INSTALL}" == "yes" ]; then
+  helm repo remove stable
+else
+  helm repo update
+fi
 
 wait_pod_up "tiller-deploy-" "kube-system" 1
 

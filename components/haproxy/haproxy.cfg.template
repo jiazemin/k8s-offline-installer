@@ -57,13 +57,13 @@ frontend https-serve
 #        server be_apps_01  kubeapps.kubeapps.svc.cluster.local:80 check
 
 backend be_kube_dash
-#        server be_kube_dash_01 kubernetes-dashboard.kube-system.svc.cluster.local:443 resolvers dnsserver ssl check verify none
+        server be_kube_dash_01 kubernetes-dashboard.kube-system.svc.cluster.local:443 resolvers dnsserver ssl check verify none
 
 backend be_prom_grafana
-#        server be_prom_grafana_01 grafana.kube-monitor.svc.cluster.local:80 resolvers dnsserver check
+        server be_prom_grafana_01 grafana.kube-monitor.svc.cluster.local:80 resolvers dnsserver check
 
 backend be_prom_main
-#        server be_prom_main_01 prometheus-server.kube-monitor.svc.cluster.local:80 resolvers dnsserver check
+        server be_prom_main_01 prometheus-server.kube-monitor.svc.cluster.local:80 resolvers dnsserver check
 
 backend be_kibana
 #        server be_kibana_01 elk-kibana.kube-elk.svc.cluster.local:5601 resolvers dnsserver check

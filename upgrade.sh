@@ -30,7 +30,7 @@ fi
 ####################################################################
 . ./install-common.sh
 
-if [ "${FLAG_UPGRADE_MASTER}" == "yes" ]; then
+if [ -f "${HOME}/.kube/config" ]; then
   kubeadm upgrade plan
   kubeadm upgrade apply -f -y v${K8S_VERSION_TMP}
 fi
